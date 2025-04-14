@@ -142,7 +142,10 @@ def payment():
     booking['payment_reference'] = request.form['reference']
 
     # Store in DynamoDB
+    booking['email'] = booking['user_email']  # Ensure the primary key is present
     bookings_table.put_item(Item=booking)
+
+
 
     # Notify via SNS
     try:
