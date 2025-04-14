@@ -19,11 +19,9 @@ bookings_table = dynamodb.Table('Bookings')
 # Static data
 from utils.data import transport_data, hotel_data
 
-
 @app.route('/')
 def home():
     return render_template('index.html', logged_in='user' in session)
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -40,7 +38,6 @@ def register():
         })
         return redirect('/login')
     return render_template('register.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -65,7 +62,6 @@ def login():
         return render_template('login.html', message="Invalid credentials.")
     return render_template('login.html')
 
-
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session:
@@ -75,9 +71,7 @@ def dashboard():
     response = bookings_table.scan(FilterExpression=Attr('user_email').eq(email))
     return render_template('dashboard.html', name=user['name'], bookings=response['Items'])
 
-
-# -------- Transport Pages --------
-
+# ---------- Transport Pages ----------
 @app.route('/bus', methods=['GET', 'POST'])
 def bus():
     if request.method == 'POST':
@@ -85,7 +79,6 @@ def bus():
         buses = [b for b in transport_data['bus'] if b['source'] == s and b['destination'] == d]
         return render_template('bus.html', buses=buses, source=s, destination=d, date=dt)
     return render_template('bus.html', buses=None)
-
 
 @app.route('/train', methods=['GET', 'POST'])
 def train():
@@ -95,7 +88,6 @@ def train():
         return render_template('train.html', trains=trains, source=s, destination=d, date=dt)
     return render_template('train.html', trains=None)
 
-
 @app.route('/flight', methods=['GET', 'POST'])
 def flight():
     if request.method == 'POST':
@@ -103,7 +95,6 @@ def flight():
         flights = [f for f in transport_data['flight'] if f['source'] == s and f['destination'] == d]
         return render_template('flight.html', flights=flights, source=s, destination=d, date=dt)
     return render_template('flight.html', flights=None)
-
 
 @app.route('/hotels', methods=['GET', 'POST'])
 def hotels():
@@ -113,12 +104,11 @@ def hotels():
         return render_template('hotels.html', hotels=hotels, city=city)
     return render_template('hotels.html', hotels=None)
 
-
 @app.route('/select_seats')
 def select_seats():
     return render_template("select_seats.html")
 
-
+# ---------- Booking ----------
 @app.route('/book', methods=['POST'])
 def book():
     if 'user' not in session:
@@ -132,12 +122,11 @@ def book():
         "date": request.form['date'],
         "seat": request.form.get('seat', 'N/A'),
         "details": request.form['details'],
-        "price": Decimal(request.form['price']),  # Use Decimal for DynamoDB
+        "price": Decimal(request.form['price']),
         "user_email": session['user'],
-        "email": session['user']  # Partition key for Bookings
+        "email": session['user']
     }
     return render_template("payment.html", booking=session['pending_booking'])
-
 
 @app.route('/payment', methods=['POST'])
 def payment():
@@ -148,21 +137,19 @@ def payment():
     booking['payment_method'] = request.form['method']
     booking['payment_reference'] = request.form['reference']
 
-    # Save booking in DynamoDB
     bookings_table.put_item(Item=booking)
 
-    # Send Notification
+    # SNS Booking Notification
     try:
         sns.publish(
             TopicArn=os.getenv('SNS_TOPIC_ARN'),
-            Message=f"Booking Confirmed:\n{booking['details']} on {booking['date']} for ₹{booking['price']}",
-            Subject="TravelGo Booking"
+            Message=f"✅ Booking Confirmed!\n{booking['details']} on {booking['date']} for ₹{booking['price']}",
+            Subject="TravelGo Booking Confirmation"
         )
     except Exception as e:
-        print("SNS Error:", e)
+        print("SNS Error (booking):", e)
 
     return redirect('/dashboard')
-
 
 @app.route('/remove_booking', methods=['POST'])
 def remove_booking():
@@ -173,11 +160,16 @@ def remove_booking():
 
     try:
         bookings_table.delete_item(Key={'email': email, 'booking_id': booking_id})
+        # SNS Cancellation Notification
+        sns.publish(
+            TopicArn=os.getenv('SNS_TOPIC_ARN'),
+            Message=f"❌ Booking Canceled\nBooking ID: {booking_id}",
+            Subject="TravelGo Cancellation"
+        )
     except Exception as e:
         print("Delete Error:", e)
 
     return redirect('/dashboard')
-
 
 @app.route('/logout')
 def logout():
@@ -188,7 +180,6 @@ def logout():
             window.location.href = "/";
         </script>
     '''
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=80)
