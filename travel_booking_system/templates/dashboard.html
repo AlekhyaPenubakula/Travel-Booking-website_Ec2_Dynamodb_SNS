@@ -199,7 +199,7 @@
           <strong>{{ b.type|capitalize }}</strong> – {{ b.details }} ({{ b.date }})
 
           <form method="POST" action="/remove_booking" style="display:inline;">
-            <input type="hidden" name="booking_id" value="{{booking_id}}">
+           <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
             <button type="submit" style="margin-left:10px; background:#c0392b; color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">Remove</button>
           </form>
         </div>
