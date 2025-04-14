@@ -13,7 +13,7 @@ sns = boto3.client('sns', region_name='ap-south-1')
 
 # DynamoDB Tables
 users_table = dynamodb.Table('travel-Users')
-bookings_table = dynamodb.Table('bookings')
+bookings_table = dynamodb.Table('Bookings')
 
 # Static data (can also store in DynamoDB)
 from utils.data import transport_data, hotel_data
