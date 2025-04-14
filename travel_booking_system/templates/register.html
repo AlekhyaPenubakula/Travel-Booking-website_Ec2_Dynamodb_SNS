@@ -1,0 +1,97 @@
+<!-- templates/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - TravelGo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(to right, #e0f7fa, #ffffff);
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .register-container {
+            width: 420px;
+            margin: 100px auto;
+            background: Transparent;
+            padding: 35px;
+            border-radius: 12px;
+           
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #004aad;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #004aad;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .login-link a {
+            text-decoration: none;
+            color: #004aad;
+            font-weight: bold;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 20px;
+          }
+          
+          .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #004aad;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+          }
+          
+          .back-button:hover {
+            background-color: #00307f;
+          }
+          
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <h2>Create a TravelGo Account</h2>
+    <form method="POST" action="/register">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+        <button type="submit">Register</button>
+    </form>
+    <div class="login-link">
+        <p>Already have an account? <a href="/login">Login here</a></p>
+    </div>
+
+    <div class="back-home">
+        <a href="/" class="back-button">← Back to Home</a>
+      </div>
+      
+</div>
+
+</body>
+</html>

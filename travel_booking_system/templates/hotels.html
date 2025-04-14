@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hotel Booking - TravelGo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('static/images/hotel.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .overlay {
+      background-color: rgba(98, 96, 96, 0.9);
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+
+    .navbar {
+      background-color: #004aad;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #004aad;
+      font-size: 32px;
+      margin-bottom: 30px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    select, input[type="date"], input[type="number"] {
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+    }
+
+    .filters {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .filters label {
+      margin-right: 20px;
+      font-weight: bold;
+    }
+
+    .filters input {
+      margin-right: 6px;
+    }
+
+    .hotel-list {
+      display: none;
+    }
+
+    .hotel-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #eaf2fb;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .book-btn {
+      background-color: #004aad;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .book-btn:hover {
+      background-color: #00337f;
+    }
+
+    @media screen and (max-width: 768px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      .hotel-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="navbar">
+      <h1>TravelGo</h1>
+      <a href="/dashboard">Dashboard</a>
+    </div>
+
+    <div class="container">
+      <h2>🏨 Book Your Hotel</h2>
+      <form id="hotel-search">
+        <select id="city" required>
+          <option value="">Select City</option>
+          <option value="Hyderabad">Hyderabad</option>
+          <option value="Bangalore">Bangalore</option>
+          <option value="Chennai">Chennai</option>
+        </select>
+        <input type="date" id="checkin" required />
+        <input type="date" id="checkout" required />
+        <input type="number" id="guests" min="1" value="1" placeholder="No. of Guests" required />
+      </form>
+
+      <div class="filters">
+        <label><input type="checkbox" id="Luxury"> Luxury</label>
+        <label><input type="checkbox" id="5-Star"> 5-Star</label>
+        <label><input type="checkbox" id="3-Star"> 3-Star</label>
+        <label><input type="checkbox" id="Budget"> Budget</label>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <button id="search-btn" class="book-btn">Search Hotels</button>
+      </div>
+
+      <div id="hotel-list" class="hotel-list"></div>
+    </div>
+  </div>
+
+  <script src="/static/js/hotels.js"></script>
+  <script>
+    function filterHotels() {
+      const city = document.getElementById("city").value;
+      const checkin = document.getElementById("checkin").value;
+      const checkout = document.getElementById("checkout").value;
+      const guests = parseInt(document.getElementById("guests").value);
+      const list = document.getElementById("hotel-list");
+      list.innerHTML = "";
+
+      if (!city || !checkin || !checkout || guests < 1) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      if (checkin > checkout) {
+        alert("Check-out date must be after check-in.");
+        return;
+      }
+
+      const filters = {
+        Luxury: document.getElementById("Luxury").checked,
+        "5-Star": document.getElementById("5-Star").checked,
+        "3-Star": document.getElementById("3-Star").checked,
+        Budget: document.getElementById("Budget").checked
+      };
+
+      const filtered = hotels.filter(h =>
+        h.location === city &&
+        (Object.values(filters).every(v => !v) || filters[h.type])
+      );
+
+      if (filtered.length === 0) {
+        list.innerHTML = "<p>No hotels found for this city with selected filters.</p>";
+        list.style.display = "block";
+        return;
+      }
+
+      filtered.forEach(hotel => {
+        const card = document.createElement("div");
+        card.className = "hotel-card";
+        card.innerHTML = `
+          <div>
+            <strong>${hotel.name}</strong><br>
+            ${hotel.type} • ₹${hotel.price}/night
+          </div>
+          <button class="book-btn" onclick='submitHotel(${JSON.stringify(hotel)}, "${checkin}", "${checkout}", ${guests})'>Book</button>
+        `;
+        list.appendChild(card);
+      });
+
+      list.style.display = "block";
+    }
+
+    function submitHotel(hotel, checkin, checkout, guests) {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "/book";
+
+      const inputs = [
+        { name: "type", value: "Hotel" },
+        { name: "source", value: hotel.location },
+        { name: "destination", value: hotel.name },
+        { name: "date", value: `${checkin} to ${checkout}` },
+        { name: "seat", value: `Room for ${guests} guest(s)` },
+        { name: "details", value: `${hotel.name} | ${hotel.type}` },
+        { name: "price", value: hotel.price * guests }
+      ];
+
+      inputs.forEach(item => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = item.name;
+        input.value = item.value;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    document.getElementById("search-btn").addEventListener("click", function (e) {
+      e.preventDefault();
+      filterHotels();
+    });
+  </script>
+</body>
+</html>

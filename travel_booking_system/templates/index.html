@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TravelGo - Book Your Journey</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+      height: 100%;
+    }
+  
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+  
+    /* Sticky Nav */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background-color: #004aad;
+      color: white;
+      padding: 15px 0px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+  
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      padding-left: 30px;
+    }
+  
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+      transition: color 0.3s ease;
+      padding-right: 30px;
+    }
+  
+    nav a:hover {
+      color: #ffdd57;
+    }
+  
+    .spacer {
+      height: 80px;
+    }
+  
+    .main-window {
+      flex: 1;
+    }
+  
+    .hero-features-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+  
+    .hero {
+      text-align: center;
+      padding: 100px 30px 40px;
+      background: url("https://images.unsplash.com/photo-1502920514313-52581002a659?auto=format&fit=crop&w=1350&q=80") no-repeat center center/cover;
+      color: white;
+    }
+  
+    .hero h2 {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+  
+    .hero p {
+      font-size: 20px;
+    }
+  
+    .features {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      padding: 40px 20px;
+      background-color: #f4f4f4;
+      flex: 1;
+    }
+  
+    .features div {
+      background: white;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 28%;
+      border-radius: 15px;
+      margin: 10px;
+      transition: transform 0.2s ease;
+    }
+  
+    .features div:hover {
+      transform: scale(1.05);
+    }
+  
+    .features h3 {
+      margin-top: 0;
+      color: #004aad;
+    }
+  
+    section.window {
+      min-height: 100vh;
+      padding: 60px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    #about {
+      background-color: #ffffff;
+    }
+  
+    #contact {
+      background-color: #f2f2f2;
+    }
+  
+    section h3 {
+      color: #004aad;
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+  
+    section p {
+      max-width: 800px;
+      font-size: 20px;
+      line-height: 1.8;
+    }
+  
+    footer {
+      
+      text-align: center;
+      background-color: #004aad;
+      color: white;
+      padding: 15px;
+    }
+  
+    @media screen and (max-width: 768px) {
+      .features div {
+        width: 90%;
+      }
+  
+      nav {
+        font-size: 16px;
+      }
+  
+      .hero h2 {
+        font-size: 30px;
+      }
+  
+      .hero p {
+        font-size: 18px;
+      }
+  
+      section p {
+        font-size: 16px;
+      }
+    }
+  </style>
+  
+  
+</head>
+<body>
+
+<div class="spacer"></div>
+
+<header>
+  <h1>TravelGo</h1>
+  <nav id="navbar-links">
+    <!-- JS will inject login/logout dynamically -->
+  </nav>
+</header>
+
+<div class="hero" id="hero">
+  <h2>Book Bus, Train, Flights & Hotels</h2>
+  <p>Your journey starts here. Find the best travel deals!</p>
+</div>
+
+<section class="features">
+  <div>
+    <h3>🔥 Featured Deals</h3>
+    <p>Flat 30% off on bus tickets for new users. Book now and save big!</p>
+    <p><strong>Use Code:</strong> TRAVEL30</p>
+  </div>
+  <div>
+    <h3>💺 Live Seat Availability</h3>
+    <p>Choose your seats in real-time just like movie ticket booking.</p>
+  </div>
+  <div>
+    <h3>✈️ Hotels Near You</h3>
+    <p>Top-rated hotels near your destination. Filter by rating and price.</p>
+  </div>
+</section>
+
+<section class="window" id="about">
+  <h3>About Us</h3>
+  <p>
+    TravelGo is your one-stop travel booking platform. We aim to make your travel experience smooth, affordable, and memorable.
+    Our real-time search lets you find buses, trains, and flights in seconds. With 24/7 customer support and premium hotel partners,
+    we ensure your journey is seamless from start to finish.
+  </p>
+</section>
+
+<section class="window" id="contact">
+  <h3>Contact Us</h3>
+  <p><strong>Email:</strong> support@travelgo.com</p>
+  <p><strong>Phone:</strong> +1 (800) 123-4567</p>
+  <p><strong>Location:</strong> Houston, TX, USA</p>
+</section>
+
+<footer>
+  <p>&copy; 2025 <strong>TravelGo</strong>. All rights reserved.</p>
+</footer>
+
+<script>
+    const navbar = document.getElementById("navbar-links");
+    const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  
+    if (isLoggedIn) {
+      navbar.innerHTML = `
+        <a href="#hero">Home</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact Us</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/logout" onclick="logout()">Logout</a>
+      `;
+    } else {
+      navbar.innerHTML = `
+        <a href="#hero">Home</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact Us</a>
+        <a href="/login">Login</a>
+      `;
+    }
+  
+    function logout() {
+      localStorage.setItem("loggedIn", "false");
+    }
+  </script>
+  
+
+</body>
+</html>
