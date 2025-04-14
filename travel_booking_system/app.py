@@ -2,12 +2,14 @@ from flask import Flask, render_template, request, redirect, session
 import uuid
 import boto3
 import os
+from decimal import Decimal
+from boto3.dynamodb.conditions import Attr
 
 # Setup Flask
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'devkey')
 
-# AWS clients
+# AWS Clients
 dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
 sns = boto3.client('sns', region_name='ap-south-1')
 
@@ -15,15 +17,13 @@ sns = boto3.client('sns', region_name='ap-south-1')
 users_table = dynamodb.Table('travel-Users')
 bookings_table = dynamodb.Table('Bookings')
 
-# Static data (can also store in DynamoDB)
+# Static data
 from utils.data import transport_data, hotel_data
 
-# Homepage
 @app.route('/')
 def home():
     return render_template('index.html', logged_in='user' in session)
 
-# Register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -40,7 +40,6 @@ def register():
         return redirect('/login')
     return render_template('register.html')
 
-# Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -53,7 +52,7 @@ def login():
             users_table.update_item(
                 Key={'email': email},
                 UpdateExpression="ADD logins :inc",
-                ExpressionAttributeValues={':inc': 1}
+                ExpressionAttributeValues={':inc': Decimal(1)}
             )
             return '''
                 <script>
@@ -64,17 +63,18 @@ def login():
         return render_template('login.html', message="Invalid credentials.")
     return render_template('login.html')
 
-# Dashboard
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session:
         return redirect('/login')
     email = session['user']
     user = users_table.get_item(Key={'email': email}).get('Item')
-    response = bookings_table.scan(FilterExpression="user_email = :u", ExpressionAttributeValues={':u': email})
+    response = bookings_table.scan(
+        FilterExpression=Attr('user_email').eq(email)
+    )
     return render_template('dashboard.html', name=user['name'], bookings=response['Items'])
 
-# Transport pages
+# Transport
 @app.route('/bus', methods=['GET', 'POST'])
 def bus():
     if request.method == 'POST':
@@ -107,16 +107,17 @@ def hotels():
         return render_template('hotels.html', hotels=hotels, city=city)
     return render_template('hotels.html', hotels=None)
 
-# Seat Selection
 @app.route('/select_seats')
 def select_seats():
     return render_template("select_seats.html")
 
-# Booking flow
 @app.route('/book', methods=['POST'])
 def book():
     if 'user' not in session:
         return redirect('/login')
+
+    # Convert price to Decimal for DynamoDB compatibility
+    price = Decimal(request.form['price'])
 
     session['pending_booking'] = {
         "id": str(uuid.uuid4())[:8],
@@ -126,12 +127,11 @@ def book():
         "date": request.form['date'],
         "seat": request.form.get('seat', 'N/A'),
         "details": request.form['details'],
-        "price": float(request.form['price']),
+        "price": price,
         "user_email": session['user']
     }
     return render_template("payment.html", booking=session['pending_booking'])
 
-# Confirm Payment
 @app.route('/payment', methods=['POST'])
 def payment():
     if 'user' not in session or 'pending_booking' not in session:
@@ -141,13 +141,14 @@ def payment():
     booking['payment_method'] = request.form['method']
     booking['payment_reference'] = request.form['reference']
 
+    # Store in DynamoDB
     bookings_table.put_item(Item=booking)
 
-    # Send SNS Notification (replace with real topic ARN)
+    # Notify via SNS
     try:
         sns.publish(
             TopicArn=os.getenv('SNS_TOPIC_ARN'),
-            Message=f"Booking Confirmed!\n{booking['details']} on {booking['date']} for ₹{booking['price']}",
+            Message=f"Booking Confirmed:\n{booking['details']} on {booking['date']} for ₹{booking['price']}",
             Subject="TravelGo Booking"
         )
     except Exception as e:
@@ -155,13 +156,12 @@ def payment():
 
     return redirect('/dashboard')
 
-# Cancel Booking
 @app.route('/remove_booking', methods=['POST'])
 def remove_booking():
     if 'user' not in session:
         return redirect('/login')
     booking_id = request.form['booking_id']
-    bookings_table.delete_item(Key={'booking_id': booking_id})
+    bookings_table.delete_item(Key={'id': booking_id})
     return redirect('/dashboard')
 
 @app.route('/logout')
@@ -176,5 +176,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=80)
-
-
