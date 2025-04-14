@@ -8,12 +8,12 @@
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: url('static/images/hotel.jpg') no-repeat center center fixed;
+      background: url('/static/images/hotel.jpg') no-repeat center center fixed;
       background-size: cover;
     }
 
     .overlay {
-      background-color: rgba(98, 96, 96, 0.9);
+      background-color: rgba(0, 0, 0, 0.7);
       min-height: 100vh;
       padding-bottom: 50px;
     }
@@ -35,20 +35,22 @@
 
     .container {
       max-width: 1000px;
-      margin: 30px auto;
+      margin: 40px auto;
       padding: 30px;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
     }
 
     h2 {
       text-align: center;
       color: #004aad;
       font-size: 32px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
-    form {
+    .form-section {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
       margin-bottom: 20px;
     }
@@ -62,17 +64,37 @@
     }
 
     .filters {
-      text-align: center;
-      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 25px;
     }
 
     .filters label {
-      margin-right: 20px;
-      font-weight: bold;
+      font-weight: 600;
     }
 
-    .filters input {
-      margin-right: 6px;
+    .search-btn-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .book-btn {
+      background-color: #ffcc00;
+      color: #004aad;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .book-btn:hover {
+      background-color: #004aad;
+      color: white;
     }
 
     .hotel-list {
@@ -83,38 +105,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #eaf2fb;
+      background: #f0f6ff;
       padding: 20px;
       margin-bottom: 15px;
-      border-radius: 12px;
+      border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .book-btn {
-      background-color: #004aad;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 15px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .book-btn:hover {
-      background-color: #00337f;
-    }
-
     @media screen and (max-width: 768px) {
-      form {
-        grid-template-columns: 1fr;
-      }
-
       .hotel-card {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
       }
     }
   </style>
@@ -128,18 +130,24 @@
 
     <div class="container">
       <h2>🏨 Book Your Hotel</h2>
-      <form id="hotel-search">
-        <select id="city" required>
-          <option value="">Select City</option>
-          <option value="Hyderabad">Hyderabad</option>
-          <option value="Bangalore">Bangalore</option>
-          <option value="Chennai">Chennai</option>
-        </select>
-        <input type="date" id="checkin" required />
-        <input type="date" id="checkout" required />
-        <input type="number" id="guests" min="1" value="1" placeholder="No. of Guests" required />
+
+      <!-- Form Section -->
+      <form id="hotel-search" onsubmit="event.preventDefault(); filterHotels();">
+        <div class="form-section">
+          <select id="city" required>
+            <option value="">Select City</option>
+            <option value="Hyderabad">Hyderabad</option>
+            <option value="Bangalore">Bangalore</option>
+            <option value="Chennai">Chennai</option>
+          </select>
+
+          <input type="date" id="checkin" required />
+          <input type="date" id="checkout" required />
+          <input type="number" id="guests" min="1" value="1" placeholder="Guests" required />
+        </div>
       </form>
 
+      <!-- Filters -->
       <div class="filters">
         <label><input type="checkbox" id="Luxury"> Luxury</label>
         <label><input type="checkbox" id="5-Star"> 5-Star</label>
@@ -147,10 +155,12 @@
         <label><input type="checkbox" id="Budget"> Budget</label>
       </div>
 
-      <div style="text-align: center; margin-bottom: 20px;">
+      <!-- Search Button -->
+      <div class="search-btn-container">
         <button id="search-btn" class="book-btn">Search Hotels</button>
       </div>
 
+      <!-- Hotel List -->
       <div id="hotel-list" class="hotel-list"></div>
     </div>
   </div>
@@ -171,7 +181,7 @@
       }
 
       if (checkin > checkout) {
-        alert("Check-out date must be after check-in.");
+        alert("Check-out must be after check-in date.");
         return;
       }
 
@@ -236,10 +246,7 @@
       form.submit();
     }
 
-    document.getElementById("search-btn").addEventListener("click", function (e) {
-      e.preventDefault();
-      filterHotels();
-    });
+    document.getElementById("search-btn").addEventListener("click", filterHotels);
   </script>
 </body>
 </html>
